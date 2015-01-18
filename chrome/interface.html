@@ -1,0 +1,36 @@
+
+<!doctype html>
+<html>
+    <head>
+        <title>Error Notification</title>
+
+        <link rel="stylesheet" href="styles/style.css"/>
+
+        <script src="scripts/interface.js"></script>
+    </head>
+    <body>
+        <header>
+            <h1>Errors on <em data-host></em></h1>
+        </header>
+        <div class="errors_container">
+
+            <div data-no-errors class="hide"> No errors found :)</div>
+
+            <ul data-error-list class="no_style_list hide errors_list">
+                <li class="clearfix">
+
+                    <div class="type"> {errorType} </div>
+                    <div class="origin"> {origin} </div>
+                    <div class="occurance"> {occurance} </div>
+
+                    <div class="call_stack_content">
+                        {stack}
+                    </div>
+
+                    <!-- {errorName} -->
+                </li>
+            </ul>
+
+        </div>
+    </body>
+</html>

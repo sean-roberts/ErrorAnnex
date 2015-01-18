@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Test for Error notifier</title>
+    </head>
+    <body>
+        
+        <script>
+            (function(){
+                console.log('Test 1: calling undefined function');
+                call_something_undefined();
+            })();
+        </script>
+        <script>
+            (function(){
+                console.log('Test 2: throwing an exception manually with Error constructor');
+                throw new Error('MANUALLY THROWN ERROR');
+            })();
+        </script>
+        
+        <script>
+            (function(){
+                console.log('Test 3: throwing an exception manually without Error constructor');
+                throw 'MANUALLY THROWN ERROR';
+            })();
+        </script>
+        
+        
+        <script> console.log('Test 4: cause a js error in an external file');  </script>
+        <script src="test.js"></script>
+        
+        
+        
+        <script> console.log('Test 5: cause a js error that will be repeated 5 times');  </script>
+        <script> 
+            (function(){
+                var fail = function(){
+                        cause_reference_error();
+                    },
+                    count = 0,
+                    inter;
+                
+                window.cause5Errors = function(){
+                    inter = setInterval(function(){
+                    count++;
+                        if(count <= 5){
+                            fail();
+                        }else {
+                            count = 0;
+                            clearInterval(inter);
+                        }
+                    }, 20);
+                };
+                
+                // go ahead an cause the first round of errors
+                cause5Errors();
+                
+            })();
+        </script>
+        
+        <button onclick="window.cause5Errors();">CAUSE 5 ERRORS</button>
+        
+    </body>
+</html>
