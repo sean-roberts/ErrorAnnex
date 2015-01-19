@@ -1,34 +1,31 @@
 {
-   "manifest_version": 2,
-   "name":"Error Notifier",
-   "description":"Error notifications",
-   "version":"0.0.1",
-   "permissions":[
-       "tabs",
-       "<all_urls>"
-   ],
-   "background":{
-      "scripts":[
-         "scripts/background.js"
-      ]
-   },
-   "browser_action":{
-      "default_icon":"icon.png",
-      "default_popup":"interface.html"
-   },
+	"manifest_version": 2,
+	"name": "Error Annex",
+	"description": "ErrorAnnex is the Chrome extension for Web Masters, Product Managers, and anyone in an organization that wants to be alerted when their interactions with a website cause JavaScript related errors.",
+	"version": "0.0.1",
+	"permissions":[
+		"tabs",
+		"<all_urls>"
+	],
+	"background":{
+		"scripts":[
+			"scripts/background.js"
+		]
+	},
+	"browser_action":{
+		"default_icon": "icon.png",
+		"default_popup": "interface.html"
+	},
 
-   "content_scripts":[
-      {
-         "matches":[
-            "<all_urls>"
-         ],
-         "js":[
-            "scripts/content.js"
-         ],
-         "run_at":"document_start"
-      }
-   ],
-   "web_accessible_resources":[
-      "scripts/error_listeners.js"
-   ]
+	"content_scripts":[
+		{
+		"matches":[
+			"<all_urls>"
+		],
+		"js":[
+			"scripts/content.js"
+		],
+			"run_at": "document_start"
+		}
+	]
 }

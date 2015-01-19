@@ -20,7 +20,7 @@ they open the extension.
 
 var utils = {
 
-        // We need a key to link errors to so we use this
+        // We need a key to link errors to hosts so we use this
         // utility to take a given url, grab the host name to the
         // best of our ability and we use it to create a key
         getHostKey : function( url ){
@@ -51,12 +51,16 @@ var utils = {
             }
 
             return host !== '' ? host : 'EMPTY_HOST';
+        },
+
+        log : function(){
+            console.log.apply(console, arguments);
         }
     },
 
     errorStorage = (function(){
 
-        var CLIENT_ERRORS_KEY = 'client_errors',
+        var CLIENT_ERRORS_KEY = '__ErrorAnnex__',
             _clientErrors = JSON.parse(localStorage.getItem(CLIENT_ERRORS_KEY) || '{}');
 
         return {
@@ -66,6 +70,10 @@ var utils = {
                 localStorage.setItem(CLIENT_ERRORS_KEY, JSON.stringify(_clientErrors));
             },
 
+            /*
+                We set error notifications based on host name key but
+                we pull them with the host name + tab id combo
+            */
             get : function( host, tabId ){
 
                 var i,
@@ -110,8 +118,10 @@ var utils = {
         };
     })(),
 
+    /**
+        Add to local memory, the association between an error and a host site
+    */
     addErrorForHost = function( host, tabId, type, data ){
-
 
         var i,
             errorInfo,
@@ -153,6 +163,9 @@ var utils = {
     },
 
     notify = function(tabId){
+        
+        // TODO: set up chrome notifications option
+
         chrome.browserAction.setBadgeText({
             text : 'error',
             tabId: tabId
@@ -162,6 +175,13 @@ var utils = {
 
 
 
+
+
+
+/*********************
+Chrome Listeners
+*********************/
+
 // on installing the extension, completely purge the legacy data
 chrome.runtime.onInstalled.addListener(function(details){
     if( details.reason === 'update'){
@@ -169,34 +189,24 @@ chrome.runtime.onInstalled.addListener(function(details){
     }
 });
 
-
-
-
 // listen to errors from the content scripts
 chrome.runtime.onMessage.addListener( function(message, sender, sendResponse) {
-
-    // todo: make sure it is an error coming in
-    // todo: handle cases when message is super long
     var hostKey = utils.getHostKey(sender.tab.url);
 
     addErrorForHost(hostKey, sender.tab.id, 'JS_ERROR', JSON.parse(message));
+    
     notify(sender.tab.id);
-
 });
-
-
-
 
 // when the tab is refreshed remove all the tabs errors
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab){
     var hostKey = utils.getHostKey(tab.url);
 
+    // This tab is refreshing -- blow away the errors for this tab
     if(changeInfo.status === 'loading'){
         errorStorage.remove(hostKey, tabId);
     }
 });
-
-
 
 
 

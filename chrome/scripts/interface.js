@@ -5,6 +5,13 @@
 
 var thisTab = null,
     
+    getBackground = (function(){
+        var bg = null;
+        return function(){
+            return bg === null ? bg = chrome.extension.getBackgroundPage() : bg;
+        };
+    })(),
+    
     utils = {
         interpolate : function(str, data){
             return str.replace(
@@ -17,18 +24,22 @@ var thisTab = null,
         }
     },
     
-    
-    
-    
+    /**
+        TODO: investigate iframe originating errors
+    */
     resolveOrigin = function(type, data){
         
-        var origin = 'todo',
+        var origin = 'No info on where error originated from.  :(',
             hashIndex,
+            noOriginUrl = data.url === '',
             tabUrl = thisTab.url,
-            pathSegments;
+            pathSegments,
+            background = getBackground();
         
         if(type === 'JS_ERROR'){
             
+            // strip the hash fragment because when comparing the urls
+            // the error.url will not contain the fragment
             hashIndex = tabUrl.indexOf('#');
             tabUrl = hashIndex > -1 ? tabUrl.substr(0, hashIndex) : tabUrl;
             
@@ -41,20 +52,30 @@ var thisTab = null,
                 // With local files, all files are treated as different domains
 
                 origin = 'in an external script';
-            }else {
+            }else if( !noOriginUrl ){
                 
                 // get the file that caused the error
                 pathSegments = data.url.split('/');
                 origin = 'in ' + pathSegments[pathSegments.length - 1];
-                
+            }else {
+                // NOTE: we are making a big assumption here that
+                // when there is no data.url and the 'script error.' wasn't seen
+                // that this was from a script from a terminal on the page
+                background.utils.log('You were notified of an error that was from the console.',
+                'We made some assumptions that this was likely where the error came from.',
+                'File a report please if you have a use case that invalidates these assumptions');
+
+                origin = 'in a console script';
             }
-            
-            if( data.line ){
-                origin += ' on line: ' + data.line;
-            }
-            
-            if( data.column ){
-                origin += ' col: ' + data.column;
+
+            if(!noOriginUrl){
+                // add in the line and col numbers if we know it
+                if( data.line ){
+                    origin += ' on line: ' + data.line;
+                }
+                if( data.column ){
+                    origin += ' col: ' + data.column;
+                }
             }
         }
         
@@ -94,12 +115,12 @@ var thisTab = null,
             stackInfo = !errorData.data.stack ? 'Callstack information not provided when error occured' : errorData.data.stack.split('\n').join('<br />');
             
             itemsHTML += utils.interpolate(itemTemplate, {
-                errorType: errorData.type === 'JS_ERROR' ? 'JS Error' : 'Network Error',
+                errorType: 'JS Error',
                 origin: resolveOrigin(errorData.type, errorData.data),
                 stack: stackInfo,
                 column: errorData.data.column,
                 line: errorData.data.line,
-                errorName: errorData.data.errorName || '',
+                errorName: errorData.data.name || '',
                 occurance: errorData.occurance <= 1 ? '' : 'thrown ' + errorData.occurance + ' times'
             });
         }
@@ -115,9 +136,11 @@ var thisTab = null,
 // So we can rely on this to know when the user is engaging with
 // the extension
 document.addEventListener('DOMContentLoaded', function () {
-    var background = chrome.extension.getBackgroundPage(),
+    
+    var background = getBackground(),
         currentTab;
     
+    // grab the currently open tab
     chrome.tabs.query({active:true, currentWindow: true}, function(tabs){
         
         var host,
