@@ -1,23 +1,5 @@
 
 
-
-
-/**
-
-To catch general JS errors we will override the onerror for the
-window. It may be optional to have the console.error message presented
-in this prompt as well.
-
-To help get errors in the unload phase we will try to listen for
-unload event listener assignment and store any errors that happen
-in that function. Then we will present the error upon the next time
-they open the extension.
-
-*/
-
-
-
-
 var utils = {
 
         // We need a key to link errors to hosts so we use this
@@ -58,16 +40,23 @@ var utils = {
         }
     },
 
+    /*
+        The idea behind having the storage of this data is for catching errors on unload events.
+        Currently we are not catching those types of errors but we will soon enough :)
+    */
     errorStorage = (function(){
 
         var CLIENT_ERRORS_KEY = '__ErrorAnnex__',
-            _clientErrors = JSON.parse(localStorage.getItem(CLIENT_ERRORS_KEY) || '{}');
+            _clientErrors = JSON.parse(localStorage.getItem(CLIENT_ERRORS_KEY) || '{}'),
+            _update = function(){
+                localStorage.setItem(CLIENT_ERRORS_KEY, JSON.stringify(_clientErrors));
+            };
 
         return {
 
             set : function( host, errorInfo ){
                 _clientErrors[host] = errorInfo;
-                localStorage.setItem(CLIENT_ERRORS_KEY, JSON.stringify(_clientErrors));
+                _update();
             },
 
             /*
@@ -76,38 +65,35 @@ var utils = {
             */
             get : function( host, tabId ){
 
-                var i,
-                    errors = (_clientErrors[ host ] && _clientErrors[ host ].errors) || [],
+                var errors = (_clientErrors[ host ] && _clientErrors[ host ].errors) || [],
                     tabErrors = { errors: [] };
 
-                for(i = 0; i < errors.length; i++){
-                    if( errors[i].tabId === tabId ){
-                        tabErrors.errors.push(errors[i]);
+                errors.forEach(function(er){
+                    if( er.tabId === tabId ){
+                        tabErrors.errors.push(er);
                     }
-                }
+                });
 
                 return tabErrors;
             },
 
             remove : function( host, tabId ){
 
-                var i,
-                    clientError = _clientErrors[ host ],
-                    errors,
-                    newErrors = [];
+                var errors = (_clientErrors[ host ] && _clientErrors[ host ].errors) || [],
+                    origLength = errors.length;
 
-                if( clientError ){
-                    errors = clientError.errors || [];
-                    for( i = 0; i < errors.length; i++){
-                        if(errors[i].tabId !== tabId){
-                            newErrors.push(errors[i]);
-                        }
+                errors.forEach(function(er, index, clientErrors){
+                    if(er.tabId === tabId){
+                        clientErrors.splice(index, 1);
                     }
-                    clientError.errors = newErrors;
-                }
-
-                if( newErrors.length === 0 ){
+                });
+                // this cleans up a host from our storage 
+                if( errors.length === 0 ){
                     delete _clientErrors[ host ];
+                }
+                
+                if(errors.length !== origLength){
+                    _update();
                 }
             },
 
@@ -131,16 +117,19 @@ var utils = {
             };
 
 
+        // DUPLICATE CHECKING
         // using the correct combination of properties
         // see if this error is another occurance of a previous error
         if( type === 'JS_ERROR'){
+
             for(i = 0; i < errorsForHost.errors.length && !duplicate; i++){
+                
                 errorInfo = errorsForHost.errors[i];
-                if(
-                    errorInfo.tabId === tabId &&
+
+                if( errorInfo.tabId === tabId &&
                     errorInfo.data.error === data.error &&
-                    errorInfo.data.stack === data.stack
-                  ){
+                    errorInfo.data.stack === data.stack ){
+
                     duplicate = true;
                     errorsForHost.errors[i].occurance++;
                 }
@@ -163,9 +152,6 @@ var utils = {
     },
 
     notify = function(tabId){
-        
-        // TODO: set up chrome notifications option
-
         chrome.browserAction.setBadgeText({
             text : 'error',
             tabId: tabId

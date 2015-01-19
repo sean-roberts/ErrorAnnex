@@ -1,7 +1,3 @@
-// Note: we have a problem with an error occuring on 
-// one tab, then opening the same url on a different tab
-// will erase the error
-
 
 var thisTab = null,
     
@@ -151,13 +147,9 @@ document.addEventListener('DOMContentLoaded', function () {
         thisTab = tab;
         
         if( tab ){
-            
-            //setTimeout(function(){
-                
             hostKey = background.utils.getHostKey(tab.url);
             errors = background.errorStorage.get(hostKey, tab.id) || {};
             populateInterface(hostKey, errors.errors);
-            //}, 3000);
         }
         
     });
