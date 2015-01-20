@@ -152,10 +152,13 @@ var utils = {
     },
 
     notify = function(tabId){
-        chrome.browserAction.setBadgeText({
+
+        // todo: send dictionary of icons
+        chrome.browserAction.setIcon({path: "icon48.png", tabId: tabId});
+        /*chrome.browserAction.setBadgeText({
             text : 'error',
             tabId: tabId
-        });
+        });*/
     };
 
 

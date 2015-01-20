@@ -14,11 +14,11 @@
 	},
 	"browser_action":{
 		"default_icon": {
-            "16": "icon16.png",
-            "19": "icon19.png",
-            "38": "icon38.png",
-            "48": "icon48.png",
-            "128": "icon128.png"
+            "16": "icon16_d.png",
+            "19": "icon19_d.png",
+            "38": "icon38_d.png",
+            "48": "icon48_d.png",
+            "128": "icon128_d.png"
         },
 		"default_popup": "interface.html"
 	},
