@@ -37,14 +37,14 @@ var thisTab = null,
             hashIndex = tabUrl.indexOf('#');
             tabUrl = hashIndex > -1 ? tabUrl.substr(0, hashIndex) : tabUrl;
 
-            debugger;
-            if(tabUrl === data.url){    
+            
+            if(tabUrl === data.url){
                 // see if this error came from a content script caused this error
                 origin = 'in an embedded script';
 
             }else if( !noOriginUrl && data.fromIframe ){
 
-                origin = 'in an iframe'; 
+                origin = 'in an iframe';
 
             } else if( data.error.toLowerCase() === 'script error.'){
                 // "Script error." is the message that is thrown when 
