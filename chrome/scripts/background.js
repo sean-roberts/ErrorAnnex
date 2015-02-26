@@ -40,6 +40,7 @@ var utils = {
         }
     },
 
+
     /*
         The idea behind having the storage of this data is for catching errors on unload events.
         Currently we are not catching those types of errors but we will soon enough :)
@@ -200,6 +201,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab){
         errorStorage.remove(hostKey, tabId);
     }
 });
+
 
 
 

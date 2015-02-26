@@ -107,3 +107,11 @@ header h1 {
     font-size: 12px;
     white-space: nowrap;
 }
+
+.call_stack_content a {
+    color: #333;
+    outline: none;
+}
+.call_stack_content a:hover {
+    text-decoration: none;
+}

@@ -85,9 +85,33 @@ var thisTab = null,
         
         return origin;
     },
-    
-    
-    
+
+
+    // build the stack data
+    // this includes creating the links to the origin url
+    buildStackInfo = function(data){
+
+        if(!data.stack){
+            return 'Callstack information not provided when error occured';
+        }
+
+        var stack = data.stack.split('\n'),
+            jumpHash = '#ErrorAnnex';
+
+        if( data.line ){
+            jumpHash += '&line' + data.line;
+        }
+        if( data.column ){
+            jumpHash += '&column' + data.column;
+        }
+
+
+        if(data.url && stack.length > 0){
+            stack[0] = '<a href="view-source:' + data.url.replace(/[\/\\]/, '') + jumpHash + '" target="_blank">' + stack[0] + '</a>';
+        }
+
+        return stack.join('<br />');
+    },
     
     populateInterface = function(host, errors){
         
@@ -96,8 +120,7 @@ var thisTab = null,
             errorData,
             errorsContainer,
             itemTemplate,
-            itemsHTML = '',
-            stackInfo = '';
+            itemsHTML = '';
         
         // Add the header information
         header.querySelector('[data-host]').innerHTML = host;
@@ -114,14 +137,13 @@ var thisTab = null,
         itemTemplate = errorsContainer.innerHTML.trim();
         
         for(i = 0; i < errors.length; i++){
-            errorData = errors[i];
             
-            stackInfo = !errorData.data.stack ? 'Callstack information not provided when error occured' : errorData.data.stack.split('\n').join('<br />');
+            errorData = errors[i];
             
             itemsHTML += utils.interpolate(itemTemplate, {
                 errorType: 'JS Error',
                 origin: resolveOrigin(errorData.type, errorData.data),
-                stack: stackInfo,
+                stack: buildStackInfo(errorData.data),
                 column: errorData.data.column,
                 line: errorData.data.line,
                 errorName: errorData.data.name || '',
