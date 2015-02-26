@@ -113,8 +113,8 @@ var utils = {
             errorInfo,
             duplicate = false,
             errorsForHost = errorStorage.get( host, tabId ) || {
-                errors : []
-            };
+                    errors : []
+                };
 
 
         // DUPLICATE CHECKING
@@ -128,7 +128,10 @@ var utils = {
 
                 if( errorInfo.tabId === tabId &&
                     errorInfo.data.error === data.error &&
-                    errorInfo.data.stack === data.stack ){
+                    errorInfo.data.stack === data.stack &&
+                    errorInfo.data.fromIframe === data.fromIframe ){
+
+                    // todo: edgecase, we have multiple iframes on a given
 
                     duplicate = true;
                     errorsForHost.errors[i].occurance++;
@@ -152,9 +155,10 @@ var utils = {
     },
 
     notify = function(tabId){
+        
+        chrome.browserAction.setIcon( { path: "icons/icon48.png", tabId: tabId } );
 
-        // todo: send dictionary of icons
-        chrome.browserAction.setIcon({path: "icon48.png", tabId: tabId});
+        
         /*chrome.browserAction.setBadgeText({
             text : 'error',
             tabId: tabId

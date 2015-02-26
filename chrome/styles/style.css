@@ -90,7 +90,10 @@ header h1 {
     padding-right: 3px;
 }
 
-.errors_container .origin {}
+.errors_container .origin {
+    /* keep inline with the error name */
+    display: inline;
+}
 
 .errors_container .type,
 .errors_container .origin {

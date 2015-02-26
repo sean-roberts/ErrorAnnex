@@ -22,15 +22,18 @@ Code injected to listen for errors on the web page's context
 })(function errorListener(){
 
     window.addEventListener('error', function(e){
-        
-        var error = {
-            error: e.message,
-            url: e.filename,
-            line: e.lineno,
-            column: e.colno,
-            stack: e.error ? e.error.stack : null,
-            name: window.event.error.name
-        };
+        var isIframe = self !== top,
+            error = {
+                error: e.message,
+                url: e.filename,
+                line: e.lineno,
+                column: e.colno,
+                stack: e.error ? e.error.stack : null,
+                name: window.event.error ? window.event.error.name : '',
+                fromIframe: isIframe,
+                iframeName: isIframe ? self.name : '',
+                iframeUrl: self.location.href
+            };
 
         window.dispatchEvent(new CustomEvent('__error__notify__', { detail: error }));
 

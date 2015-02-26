@@ -20,12 +20,10 @@ var thisTab = null,
         }
     },
     
-    /**
-        TODO: investigate iframe originating errors
-    */
+    
     resolveOrigin = function(type, data){
         
-        var origin = 'No info on where error originated from.  :(',
+        var origin = '',
             hashIndex,
             noOriginUrl = data.url === '',
             tabUrl = thisTab.url,
@@ -38,30 +36,40 @@ var thisTab = null,
             // the error.url will not contain the fragment
             hashIndex = tabUrl.indexOf('#');
             tabUrl = hashIndex > -1 ? tabUrl.substr(0, hashIndex) : tabUrl;
-            
-            // see if this error came from a content script caused this error
-            if(tabUrl === data.url){
+
+            debugger;
+            if(tabUrl === data.url){    
+                // see if this error came from a content script caused this error
                 origin = 'in an embedded script';
+
+            }else if( !noOriginUrl && data.fromIframe ){
+
+                origin = 'in an iframe'; 
+
             } else if( data.error.toLowerCase() === 'script error.'){
                 // "Script error." is the message that is thrown when 
                 // an external src, that is not from the domain as the host
                 // With local files, all files are treated as different domains
 
-                origin = 'in an external script';
+                
+
+                if(data.fromIframe && noOriginUrl && background.utils.getHostKey(data.iframeUrl) !== tabUrl){
+                    // Note: this can also happen if the iframe url is of a differnt
+                    // domain than the host as well
+                    origin = 'in a cross origin iframe';
+                }else {
+                    origin = 'in an external script';
+                }
+
             }else if( !noOriginUrl ){
                 
                 // get the file that caused the error
                 pathSegments = data.url.split('/');
                 origin = 'in ' + pathSegments[pathSegments.length - 1];
-            }else {
-                // NOTE: we are making a big assumption here that
-                // when there is no data.url and the 'script error.' wasn't seen
-                // that this was from a script from a terminal on the page
-                background.utils.log('You were notified of an error that was from the console.',
-                'We made some assumptions that this was likely where the error came from.',
-                'File a report please if you have a use case that invalidates these assumptions');
+            }
 
-                origin = 'in a console script';
+            if(data.fromIframe && data.iframeName){
+                origin += ' named "' + data.iframeName + '"';
             }
 
             if(!noOriginUrl){
@@ -117,7 +125,8 @@ var thisTab = null,
                 column: errorData.data.column,
                 line: errorData.data.line,
                 errorName: errorData.data.name || '',
-                occurance: errorData.occurance <= 1 ? '' : 'thrown ' + errorData.occurance + ' times'
+                occurance: errorData.occurance <= 1 ? '' : 'thrown ' + errorData.occurance + ' times',
+                iframeUrl: (errorData.data.fromIframe && errorData.data.iframeUrl) ? ' (iframe url: ' + errorData.data.iframeUrl + ')' : ''
             });
         }
         
