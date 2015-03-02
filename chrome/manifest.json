@@ -35,5 +35,7 @@
 			"run_at": "document_start",
             "all_frames": true
 		}
-	]
+	],
+
+    "offline_enabled" : true
 }
