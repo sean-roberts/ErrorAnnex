@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function () {
         
         // populate the global tab access
         thisTab = tab;
-        
+        debugger;
         if( tab ){
             hostKey = background.utils.getHostKey(tab.url);
             errors = background.errorStorage.get(hostKey, tab.id) || {};

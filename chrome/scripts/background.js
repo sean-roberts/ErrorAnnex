@@ -70,6 +70,7 @@ var utils = {
                     tabErrors = { errors: [] };
 
                 errors.forEach(function(er){
+
                     if( er.tabId === tabId ){
                         tabErrors.errors.push(er);
                     }
@@ -155,7 +156,7 @@ var utils = {
         errorStorage.set(host, errorsForHost);
     },
 
-    notify = function(tabId){
+    sendNotifications = function(tabId){
         
         chrome.browserAction.setIcon( { path: "icons/icon48.png", tabId: tabId } );
 
@@ -164,6 +165,10 @@ var utils = {
             text : 'error',
             tabId: tabId
         });*/
+    },
+
+    suppressNotifications = function(tabId){
+        chrome.browserAction.setIcon( { path: "icons/icon48_d.png", tabId: tabId } );
     };
 
 
@@ -185,20 +190,22 @@ chrome.runtime.onInstalled.addListener(function(details){
 
 // listen to errors from the content scripts
 chrome.runtime.onMessage.addListener( function(message, sender, sendResponse) {
-    var hostKey = utils.getHostKey(sender.tab.url);
 
-    addErrorForHost(hostKey, sender.tab.id, 'JS_ERROR', JSON.parse(message));
-    
-    notify(sender.tab.id);
-});
+    // only process when we have a url
+    if(!sender.tab.url){
+        return;
+    }
 
-// when the tab is refreshed remove all the tabs errors
-chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab){
-    var hostKey = utils.getHostKey(tab.url);
+    var hostKey = utils.getHostKey(sender.tab.url),
+        data = JSON.parse(message);
 
-    // This tab is refreshing -- blow away the errors for this tab
-    if(changeInfo.status === 'loading'){
-        errorStorage.remove(hostKey, tabId);
+
+    if(data.error){
+        addErrorForHost(hostKey, sender.tab.id, 'JS_ERROR', data);
+        sendNotifications(sender.tab.id);
+    }else if(data.tabUpdate && data.tabUpdate === 'full-page-load'){
+        errorStorage.remove(hostKey, sender.tab.id);
+        suppressNotifications(sender.tab.id);
     }
 });
 
@@ -235,7 +242,7 @@ chrome.webRequest.onErrorOccurred.addListener(function(error){
             url : tab.url
         });
 
-        notify(tab.id);
+        sendNotifications(tab.id);
     });
 
 },{ urls: ["<all_urls>"] });

@@ -1,4 +1,14 @@
 
+
+/**************************
+Event key that will notify us of js errors.
+We don't want this key to have any chance of collisions
+or being listened for (in case a site tries to supress these)
+**************************/
+var COLLISIONLESS_EVENT = '__annex_er_' + chrome.runtime.id + '__';
+
+
+
 /**************************
 Code injected to listen for errors on the web page's context
 **************************/
@@ -7,7 +17,7 @@ Code injected to listen for errors on the web page's context
     // Our facade to get into the web pages context
     // will be adding a script element and injecting code
 
-    var injection = ';(' + toInject + ')();',
+    var injection = ';(' + toInject + ')("' + COLLISIONLESS_EVENT + '");',
         script = document.createElement('script');
 
     script.textContent = injection;
@@ -19,9 +29,9 @@ Code injected to listen for errors on the web page's context
     // Remove the node because it's not needed in the dom
     script.parentNode.removeChild(script);
 
-})(function errorListener(){
+})(function errorListener(eventId){
 
-    
+    console.log(eventId);
     window.addEventListener('error', function(e){
         var isIframe = self !== top,
             error = {
@@ -36,7 +46,7 @@ Code injected to listen for errors on the web page's context
                 iframeUrl: self.location.href
             };
 
-        window.dispatchEvent(new CustomEvent('__error__notify__', { detail: error }));
+        window.dispatchEvent(new CustomEvent(eventId, { detail: error }));
 
         return false;
     });
@@ -49,7 +59,7 @@ Code that will live in the isolated world
 **************************/
 ;(function(window, undefined){
 
-    window.addEventListener('__error__notify__', function(customEvent){
+    window.addEventListener(COLLISIONLESS_EVENT, function(customEvent){
 
         if(customEvent && customEvent.detail && chrome.runtime){
             chrome.runtime.sendMessage(JSON.stringify(customEvent.detail));
@@ -61,5 +71,12 @@ Code that will live in the isolated world
 			}
         }
     }, false);
+
+    // catch this content script being loaded for the 
+    // top frame and signal to the extension that this tab has 
+    // gone through a full browser load
+    if(self === top && chrome.runtime){
+        chrome.runtime.sendMessage(JSON.stringify({ tabUpdate: 'full-page-load' }));
+    }
 
 })(window);
