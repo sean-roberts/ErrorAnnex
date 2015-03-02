@@ -7,6 +7,7 @@ var thisTab = null,
             return bg === null ? bg = chrome.extension.getBackgroundPage() : bg;
         };
     })(),
+
     
     utils = {
         interpolate : function(str, data){
@@ -50,7 +51,6 @@ var thisTab = null,
                 // "Script error." is the message that is thrown when 
                 // an external src, that is not from the domain as the host
                 // With local files, all files are treated as different domains
-
                 
 
                 if(data.fromIframe && noOriginUrl && background.utils.getHostKey(data.iframeUrl) !== tabUrl){
@@ -95,23 +95,28 @@ var thisTab = null,
             return 'Callstack information not provided when error occured';
         }
 
-        var stack = data.stack.split('\n'),
-            jumpHash = '#ErrorAnnex';
+        var stack = data.stack.split('\n');
 
-        if( data.line ){
-            jumpHash += '&line' + data.line;
-        }
-        if( data.column ){
-            jumpHash += '&column' + data.column;
-        }
-
-
-        if(data.url && stack.length > 0){
-            stack[0] = '<a href="view-source:' + data.url.replace(/[\/\\]/, '') + jumpHash + '" target="_blank">' + stack[0] + '</a>';
+        if(data.url){
+            if(stack.length > 1 && stack[1].indexOf(data.url) >= 0){
+                stack[1] = stack[1].replace(data.url, '<a href="view-source:' + data.url.replace(/[\/\\]/, '') + '" target="_blank">' + data.url + '</a>');
+            }else if(stack.length === 1){
+                stack[0] = '<a href="view-source:' + data.url.replace(/[\/\\]/, '') + '" target="_blank">' + stack[0] + '</a>';
+            }
         }
 
-        return stack.join('<br />');
+
+        return stack.map(function(item, index){
+            if(index === 0){
+                return item;
+            }
+
+            return '<div class="stack_item">' + item + '</div>';
+
+        }).join('');
     },
+
+
     
     populateInterface = function(host, errors){
         
@@ -176,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function () {
         
         // populate the global tab access
         thisTab = tab;
-        
+
         if( tab ){
             hostKey = background.utils.getHostKey(tab.url);
             errors = background.errorStorage.get(hostKey, tab.id) || {};

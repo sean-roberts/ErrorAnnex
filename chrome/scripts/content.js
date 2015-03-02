@@ -31,7 +31,6 @@ Code injected to listen for errors on the web page's context
 
 })(function errorListener(eventId){
 
-    console.log(eventId);
     window.addEventListener('error', function(e){
         var isIframe = self !== top,
             error = {

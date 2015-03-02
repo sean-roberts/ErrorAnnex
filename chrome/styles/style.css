@@ -33,6 +33,14 @@ body {
     padding: 0;
 }
 
+.max_width_bound {
+    display: block !important;
+    max-width: 800px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 
 /********************
 em is used to drop template info in
@@ -100,12 +108,21 @@ header h1 {
     font-weight:bold;
 }
 
+.errors_container .iframeInfo {
+    display: inline;
+}
+
 .errors_container .call_stack_content {
     display: block;
     padding: 5px 0;
     color: #777;
     font-size: 12px;
     white-space: nowrap;
+}
+
+.errors_container .call_stack_content .stack_item{
+    display: block;
+    padding-left: 15px;
 }
 
 .call_stack_content a {
