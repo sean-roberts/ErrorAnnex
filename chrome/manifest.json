@@ -1,8 +1,8 @@
 {
 	"manifest_version": 2,
-	"name": "Error Annex",
-	"description": "ErrorAnnex is the Chrome extension for Web Masters, Product Managers, and anyone in an organization that wants to be alerted when their interactions with a website cause JavaScript related errors.",
-	"version": "0.0.1",
+	"name": "ErrorAnnex",
+	"description": "ErrorAnnex by AnnexTools is the easiest way to spot errors on you products and sites around the web.",
+	"version": "1.0.0",
 	"permissions":[
 		"tabs",
 		"<all_urls>"
@@ -14,6 +14,14 @@
 	},
 	"browser_action":{
 		"default_icon": {
+            "16": "icons/icon16_d.png",
+            "19": "icons/icon19_d.png",
+            "38": "icons/icon38_d.png",
+            "48": "icons/icon48_d.png",
+            "128": "icons/icon128_d.png"
+        },
+
+        "icons": {
             "16": "icons/icon16_d.png",
             "19": "icons/icon19_d.png",
             "38": "icons/icon38_d.png",

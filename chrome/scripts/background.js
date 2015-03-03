@@ -158,7 +158,10 @@ var utils = {
 
     sendNotifications = function(tabId){
         
-        chrome.browserAction.setIcon( { path: "icons/icon48.png", tabId: tabId } );
+        chrome.browserAction.setIcon( { path: {
+            19: "icons/icon19.png",
+            38: "icons/icon38.png"
+        }, tabId: tabId } );
 
         
         /*chrome.browserAction.setBadgeText({
@@ -168,7 +171,17 @@ var utils = {
     },
 
     suppressNotifications = function(tabId){
-        chrome.browserAction.setIcon( { path: "icons/icon48_d.png", tabId: tabId } );
+        chrome.browserAction.setIcon( { path: {
+            19: "icons/icon19_d.png",
+            38: "icons/icon38_d.png"
+        }, tabId: tabId } );
+    },
+
+    markAsSeen = function(tabId){
+        chrome.browserAction.setIcon( { path: {
+            19: "icons/icon19_p.png",
+            38: "icons/icon38_p.png"
+        }, tabId: tabId });
     };
 
 
