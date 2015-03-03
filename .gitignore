@@ -1,0 +1,5 @@
+# mac directory stuff
+.DS_Store
+
+# chrome builds
+*.crx
