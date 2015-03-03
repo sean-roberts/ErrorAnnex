@@ -187,7 +187,9 @@ document.addEventListener('DOMContentLoaded', function () {
             errors = background.errorStorage.get(hostKey, tab.id) || {};
             populateInterface(hostKey, errors.errors);
 
-            background.markAsSeen(tab.id);
+            if(errors.errors.length > 0){
+                background.markAsSeen(tab.id);
+            }
         }
     });
 });
