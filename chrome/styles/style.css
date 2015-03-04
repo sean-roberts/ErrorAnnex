@@ -1,3 +1,7 @@
+* {
+    box-sizing: border-box;
+}
+
 body {
     min-width: 400px;
     margin: 0;
@@ -50,12 +54,8 @@ em {
 }
 
 
-header,
-.errors_container {
-    padding: 2px 15px;
-}
-
 header {
+    padding: 2px 15px;
     background: #E54D39;
     color: #fff;
     border-radius: 2px 2px 0 0;
@@ -72,19 +72,35 @@ header h1 {
 .errors_container {
     font-size: 13px;
     margin: 8px 0;
+    padding: 2px 0;
+}
+
+.errors_container .no_errors {
+    padding: 0 15px;
 }
 
 .errors_container .errors_list {
-    max-height: 350px;
+    max-height: 400px;
     overflow: scroll;
 }
 
 .errors_container ul li {
     width: 100%;
     border-bottom: 1px solid #efefef;
-    padding: 2px 0;
+    padding: 2px 25px 2px 15px;
     margin-top: 5px;
+    cursor: default;
 }
+
+.errors_container .errors_list:hover li {
+    transition: all ease .2s;
+}
+.errors_container .errors_list:hover li:hover {
+    /*will add when we do actions*/
+    /*padding-left:40px;
+    padding-right:0;*/
+}
+
 
 .errors_container ul li div {
     display: inline-block;
@@ -120,10 +136,11 @@ header h1 {
     white-space: nowrap;
 }
 
-.errors_container .call_stack_content .stack_item{
+.errors_container .call_stack_content .stack_item {
     display: block;
     padding-left: 15px;
 }
+
 
 .call_stack_content a {
     color: #333;
