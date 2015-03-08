@@ -10,16 +10,57 @@ var thisTab = null,
 
     
     utils = {
+
         interpolate : function(str, data){
+
             return str.replace(
-                /\{([^{}]*)\}/g,
-                function (a, b) {
-                    var r = data[b];
-                    return typeof r === 'string' || typeof r === 'number' ? r : a;
-                }
-            );
+                    /\{([^{}]*)\}/g,
+                    function (a, b) {
+                        var r = data[b];
+                        return typeof r === 'string' || typeof r === 'number' ? r : a;
+                    }
+                );
+        },
+
+        escapeHTML : function(str){
+            // for escaping purposes we will have the 
+            // browser use it's native escaping features of the
+            // createTextNode
+            var div = document.createElement('div');
+            div.appendChild(document.createTextNode(str));
+            return div.innerHTML;
         }
     },
+
+    find = {
+        one: function(selector){
+            return document.querySelector(selector);
+        },
+        all: function(selector){
+            return document.querySelectorAll(selector);
+        }
+    },
+
+    templates = (function(){
+        var _cache = {};
+
+        return {
+            preCacheTemplate: function(templateId) {
+                var src = document.getElementById(templateId);
+
+                if(!(templateId in _cache)){
+                    _cache[templateId] = src.innerHTML;
+                }
+
+                return _cache[templateId];
+            },
+
+            getPopulatedHTML: function(templateId, data) {
+                var template = templates.preCacheTemplate(templateId, data);
+                return utils.interpolate(template, data || {});
+            }
+        };
+    })(),
     
     
     resolveOrigin = function(type, data){
@@ -97,55 +138,62 @@ var thisTab = null,
 
         var stack = data.stack.split('\n');
 
-        if(data.url){
-            if(stack.length > 1 && stack[1].indexOf(data.url) >= 0){
-                stack[1] = stack[1].replace(data.url, '<a href="view-source:' + data.url.replace(/[\/\\]/, '') + '" target="_blank">' + data.url + '</a>');
-            }else if(stack.length === 1){
-                stack[0] = '<a href="view-source:' + data.url.replace(/[\/\\]/, '') + '" target="_blank">' + stack[0] + '</a>';
-            }
-        }
 
+        stack = stack.map(function(item, index){
 
-        return stack.map(function(item, index){
+            // only style stack items if this is not the 
+            // first reason in the call stack
             if(index === 0){
+
+                // if this is the only callstack entry we need
+                // to link it to the source if we have the url
+                if( data.url && stack.length === 1){
+                    item = '<a href="view-source:' + data.url.replace(/[\/\\]/, '') + '" target="_blank">' + utils.escapeHTML(item) + 'test</a>';
+                }else {
+                    item = utils.escapeHTML(item);
+                }
+
                 return item;
             }
 
-            return '<div class="stack_item">' + item + '</div>';
+            return '<div class="stack_item">' + utils.escapeHTML(item) + '</div>';
+        });
 
-        }).join('');
+
+        // add link to the 2nd reason entry in the 
+        // call stack. But only do it if we have a good match on it
+        if(data.url && stack.length > 1 && stack[1].indexOf(data.url) >= 0){
+            stack[1] = stack[1].replace(data.url, '<a href="view-source:' + data.url.replace(/[\/\\]/, '') + '" target="_blank">' + data.url + '</a>');
+        }
+
+        return stack.join('');
     },
 
 
     
     populateInterface = function(host, errors){
         
-        var i,
-            header = document.querySelector('header'),
-            errorData,
+        var header = find.one('header'),
             errorsContainer,
-            itemTemplate,
             itemsHTML = '';
         
         // Add the header information
-        header.querySelector('[data-host]').innerHTML = host;
+        header.querySelector('[data-host]').innerHTML = utils.escapeHTML(host);
         
         
         // no errors message
         if(!errors || errors.length === 0){
-            document.querySelector('[data-no-errors]').classList.remove('hide');
+
+            find.one('.errors_container').insertAdjacentHTML('afterbegin', templates.getPopulatedHTML('template--no-errors'));
+            find.one('[data-no-errors]').classList.remove('hide');
             return;
         }
         
         // we have errors, display them 
-        errorsContainer = document.querySelector('[data-error-list]');
-        itemTemplate = errorsContainer.innerHTML.trim();
+        errorsContainer = find.one('[data-error-list]');
         
-        for(i = 0; i < errors.length; i++){
-            
-            errorData = errors[i];
-            
-            itemsHTML += utils.interpolate(itemTemplate, {
+        errors.map(function(errorData){
+            itemsHTML += templates.getPopulatedHTML('template--error-list-item', {
                 errorType: 'JS Error',
                 origin: resolveOrigin(errorData.type, errorData.data),
                 stack: buildStackInfo(errorData.data),
@@ -155,7 +203,7 @@ var thisTab = null,
                 occurance: errorData.occurance <= 1 ? '' : 'thrown ' + errorData.occurance + ' times',
                 iframeUrl: (errorData.data.fromIframe && errorData.data.iframeUrl) ? ' (iframe url: ' + errorData.data.iframeUrl + ')' : ''
             });
-        }
+        });
         
         errorsContainer.innerHTML = itemsHTML;
         errorsContainer.classList.remove('hide');
@@ -194,26 +242,5 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-/**
-    GOOGLE ANALYTICS
-*/
-var _gaq = _gaq || [];
-_gaq.push(['_setAccount', 'UA-60306007-1']);
-_gaq.push(['_trackPageview']);
 
-(function() {
-  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-  ga.src = 'https://ssl.google-analytics.com/ga.js';
-  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-})();
-
-
-
-// function trackPageview() {
-//   _gaq.push(['_trackPageview']);
-// }
-
-// function trackEvent(category, action, opt_label, opt_value, opt_noninteraction) {
-//   _gaq.push(['_trackEvent', category, action, opt_label, opt_value, opt_noninteraction]);
-// }
 

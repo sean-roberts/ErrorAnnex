@@ -6,6 +6,10 @@
         <link rel="stylesheet" href="styles/style.css"/>
 
         <script src="scripts/interface.js"></script>
+
+
+        <script src="scripts/ga.js" async="true"></script>
+
     </head>
     <body>
         <header>
@@ -13,26 +17,36 @@
         </header>
         <div class="errors_container">
 
-            <div data-no-errors class="hide no_errors"> No errors found! Yay :)</div>
+            
+            <script id="template--no-errors" type="text/x-template">
+                <div data-no-errors class="hide no_errors"> No errors found! Yay :)</div>
+            </script>
+
 
             <ul data-error-list class="no_style_list hide errors_list">
-                <li class="clearfix">
 
-                    
-                    <div class="max_width_bound">
-                        <div class="type"> {errorType} </div>
-                        <div class="origin"> {origin} </div>
-                    </div>
-                    <div class="iframeInfo"> {iframeUrl} </div>
-                    <div class="occurance"> {occurance} </div>
-                    <div class="call_stack_content">
-                        {stack}
-                    </div>
+                <script id="template--error-list-item" type="text/x-template">
 
-                    <!-- {errorName} -->
-                </li>
+                    <li class="clearfix">
+                        <div class="max_width_bound">
+                            <div class="type"> {errorType} </div>
+                            <div class="origin"> {origin} </div>
+                        </div>
+                        <div class="iframeInfo"> {iframeUrl} </div>
+                        <div class="occurance"> {occurance} </div>
+                        <div class="call_stack_content">
+                            {stack}
+                        </div>
+
+                        <!-- {errorName} -->
+                    </li>
+
+                </script>
+                
             </ul>
 
         </div>
+
+
     </body>
 </html>
