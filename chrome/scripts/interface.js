@@ -127,6 +127,23 @@ var thisTab = null,
         return origin;
     },
 
+    // for a given item, the data may justify 
+    // having multiple types of classes applied
+    // for styling, this is to account for that
+    getItemClasses = function(data){
+
+        var classes = [],
+            stackAry = data.stack ? data.stack.split('\n') : [];
+
+        // callstack verbose info will gave a toggle arrow
+        if(stackAry.length > 1){
+            classes.push('toggle_stack');
+        }
+
+
+        return classes.join(' ');
+    },
+
 
     // build the stack data
     // this includes creating the links to the origin url
@@ -148,12 +165,12 @@ var thisTab = null,
                 // if this is the only callstack entry we need
                 // to link it to the source if we have the url
                 if( data.url && stack.length === 1){
-                    item = '<a href="view-source:' + data.url.replace(/[\/\\]/, '') + '" target="_blank">' + utils.escapeHTML(item) + 'test</a>';
+                    item = '<a href="view-source:' + data.url.replace(/[\/\\]/, '') + '" target="_blank">' + utils.escapeHTML(item) + '</a>';
                 }else {
                     item = utils.escapeHTML(item);
                 }
 
-                return item;
+                return '<div class="stack_error"> <div class="arrow"></div>' + item + '</div>';
             }
 
             return '<div class="stack_item">' + utils.escapeHTML(item) + '</div>';
@@ -169,13 +186,38 @@ var thisTab = null,
         return stack.join('');
     },
 
+    setBodyWidth = function(longestLineLength){
+        // 7 handles our large string case well
+        // until we run into an issue with sizing being
+        // too far off, we will settle with this to reduce
+        // the the need to calculate it
+        find.one('body').style.width = longestLineLength * 7 + 'px';
+    },
+
+    calcMinWidth = function(data){
+        var stackAry = data.stack ? data.stack.split('\n') : [],
+            longest;
+
+        if(stackAry.length === 0){
+            return 0;
+        }
+
+        // callstack verbose info will gave a toggle arrow
+        longest = stackAry.reduce(function(prev, current){
+                return prev.length > current.length ? prev : current;
+            }) || '';
+
+        return longest.length || 0;
+    },
+
 
     
     populateInterface = function(host, errors){
         
         var header = find.one('header'),
             errorsContainer,
-            itemsHTML = '';
+            itemsHTML = '',
+            bodyWidth = 0;
         
         // Add the header information
         header.querySelector('[data-host]').innerHTML = utils.escapeHTML(host);
@@ -193,21 +235,52 @@ var thisTab = null,
         errorsContainer = find.one('[data-error-list]');
         
         errors.map(function(errorData){
+
+            // calculate what the browser size should be            
+            bodyWidth = Math.max(bodyWidth, calcMinWidth(errorData.data));
+
+            // build the actual list items
             itemsHTML += templates.getPopulatedHTML('template--error-list-item', {
-                errorType: 'JS Error',
+                errorType: 'Error',
                 origin: resolveOrigin(errorData.type, errorData.data),
                 stack: buildStackInfo(errorData.data),
                 column: errorData.data.column,
                 line: errorData.data.line,
                 errorName: errorData.data.name || '',
-                occurance: errorData.occurance <= 1 ? '' : 'thrown ' + errorData.occurance + ' times',
-                iframeUrl: (errorData.data.fromIframe && errorData.data.iframeUrl) ? ' (iframe url: ' + errorData.data.iframeUrl + ')' : ''
+                occurance: errorData.occurance <= 1 ? '' : errorData.occurance > 99 ? '99+' : errorData.occurance + 'x',
+                occuranceTitle: errorData.occurance <= 1 ? '' : 'thrown ' + errorData.occurance + ' times',
+                iframeUrl: (errorData.data.fromIframe && errorData.data.iframeUrl) ? ' (iframe url: ' + errorData.data.iframeUrl + ')' : '',
+                itemClasses: getItemClasses(errorData.data)
             });
         });
-        
+
+        setBodyWidth(bodyWidth);
+
         errorsContainer.innerHTML = itemsHTML;
         errorsContainer.classList.remove('hide');
+    },
+
+    bindEvents = function(){
+
+        var _bind = function(el){
+            return Gator(find.one(el));
+        };
+
+
+        // toggle call stack visibility
+        _bind('.errors_list').on('click', '.toggle_stack .stack_error', function(){
+            var callStackContent = this.parentElement;
+
+            if(callStackContent.classList.contains('show_stack')){
+                this.parentElement.classList.remove('show_stack');
+            }else {
+                this.parentElement.classList.add('show_stack');
+            }
+        });
+
     };
+
+
 
 
 
@@ -231,9 +304,11 @@ document.addEventListener('DOMContentLoaded', function () {
         thisTab = tab;
 
         if( tab ){
+
             hostKey = background.utils.getHostKey(tab.url);
             errors = background.errorStorage.get(hostKey, tab.id) || {};
             populateInterface(hostKey, errors.errors);
+            bindEvents();
 
             if(errors.errors.length > 0){
                 background.markAsSeen(tab.id);
