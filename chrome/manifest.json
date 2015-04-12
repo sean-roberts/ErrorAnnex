@@ -5,7 +5,8 @@
 	"version": "1.0.0",
 	"permissions":[
 		"tabs",
-		"<all_urls>"
+		"<all_urls>",
+        "webNavigation"
 	],
 	"background":{
 		"scripts":[

@@ -303,6 +303,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // populate the global tab access
         thisTab = tab;
 
+        // TODO: we are trying to do work on tabs that are not existent any more
         if( tab ){
 
             hostKey = background.utils.getHostKey(tab.url);
@@ -312,6 +313,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if(errors.errors.length > 0){
                 background.markAsSeen(tab.id);
+            }else {
+                background.suppressNotifications(tab.id);
             }
         }
     });

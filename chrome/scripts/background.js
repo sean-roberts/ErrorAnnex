@@ -79,6 +79,26 @@ var utils = {
                 return tabErrors;
             },
 
+            /*
+                prerendering and other tab replace type events can
+                cause the tab id to change. We need to keep it synced up
+                whenever the replacement happens
+            */
+            updateTabId : function( host, oldTabId, newTabId){
+                
+                console.log('update tabid from', oldTabId, 'to', newTabId);
+
+                var errors = (_clientErrors[ host ] && _clientErrors[ host ].errors) || [];
+
+                errors.forEach(function(er){
+                    if(er.tabId === oldTabId){
+                        er.tabId = newTabId;
+                    }
+                });
+
+                _update();
+            },
+
             remove : function( host, tabId ){
 
                 var errors = (_clientErrors[ host ] && _clientErrors[ host ].errors) || [],
@@ -156,32 +176,64 @@ var utils = {
         errorStorage.set(host, errorsForHost);
     },
 
-    sendNotifications = function(tabId){
-        
-        chrome.browserAction.setIcon( { path: {
-            19: "icons/icon19.png",
-            38: "icons/icon38.png"
-        }, tabId: tabId } );
 
-        
-        /*chrome.browserAction.setBadgeText({
-            text : 'error',
-            tabId: tabId
-        });*/
+    // we have had some issues where an event will 
+    // be triggered for a "tab" that we dont have access to.
+    // so we will use this utility to always filter what we
+    // have access to by the id given
+    queryTabById = function(tabId, cb){
+        chrome.tabs.query({}, function(tabs){
+            var tabMatch = tabs.filter(function(tab){
+                    return tab.id === tabId;
+                });
+
+            if(tabMatch.length > 0){
+                cb(tabMatch[0]);
+            }
+        });
     },
 
-    suppressNotifications = function(tabId){
-        chrome.browserAction.setIcon( { path: {
-            19: "icons/icon19_d.png",
-            38: "icons/icon38_d.png"
-        }, tabId: tabId } );
+
+    // note this is used in a place that accepts a generic
+    // callback, so we need to make sure the message is actually
+    // given to us for our error handling -- otherwise we console.error
+    // lots of undefined values
+    runtimeErrorHandler = function(message){
+        if(message !== undefined && chrome.runtime.lastError !== undefined){
+            console.error('CAUGHT RUNTIME ERROR',
+                message, chrome.runtime.lastError,
+                '\nnote: this is logged for reference');            
+        }
+    },
+
+    sendNotifications = function(tabId){
+        
+        queryTabById(tabId, function(tab){
+            chrome.browserAction.setIcon( { path: {
+                19: "icons/icon19.png",
+                38: "icons/icon38.png"
+            }, tabId: tab.id }, runtimeErrorHandler );
+        });
+    },
+
+    suppressNotifications = function(tabId, sender){
+
+        queryTabById(tabId, function(tab){
+            chrome.browserAction.setIcon( { path: {
+                19: "icons/icon19_d.png",
+                38: "icons/icon38_d.png"
+            }, tabId: tab.id }, runtimeErrorHandler);
+        });
     },
 
     markAsSeen = function(tabId){
-        chrome.browserAction.setIcon( { path: {
-            19: "icons/icon19_p.png",
-            38: "icons/icon38_p.png"
-        }, tabId: tabId });
+
+        queryTabById(tabId, function(tab){
+            chrome.browserAction.setIcon( { path: {
+                19: "icons/icon19_p.png",
+                38: "icons/icon38_p.png"
+            }, tabId: tab.id }, runtimeErrorHandler);
+        });
     };
 
 
@@ -199,6 +251,10 @@ chrome.runtime.onInstalled.addListener(function(details){
     if( details.reason === 'update'){
         errorStorage.purgeErrors();
     }
+});
+
+chrome.runtime.onStartup.addListener(function() {
+    // look into
 });
 
 // listen to errors from the content scripts
@@ -222,7 +278,18 @@ chrome.runtime.onMessage.addListener( function(message, sender, sendResponse) {
     }
 });
 
+// we track the errors for a given tab by the tab id
+// but these ids can be replaced so we need to update them
+// with the correct ids
+chrome.webNavigation.onTabReplaced.addListener(function (details){
+    queryTabById(details.tabId, function(tab){
+        errorStorage.updateTabId(utils.getHostKey(tab.url), details.replacedTabId, details.tabId);
+    });
+});
 
+
+// TODO: explore if this makes more sense than content script message
+// chrome.webNavigation.onCompleted.addListener(function (details){});
 
 
 /**
@@ -244,7 +311,7 @@ chrome.webRequest.onErrorOccurred.addListener(function(error){
 
     // We need to get the correct url for the tab
     // to correctly link the hostkey
-    chrome.tabs.get(error.tabId, function(tab){
+    queryTabById(error.tabId, function(tab){
         var hostKey = utils.getHostKey(tab.url);
 
         errorStorage.addErrorForHost(hostKey, 'NETWORK_ERROR', {
