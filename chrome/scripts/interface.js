@@ -150,7 +150,7 @@ var thisTab = null,
     buildStackInfo = function(data){
 
         if(!data.stack){
-            return 'Callstack information not provided when error occured';
+            return 'Callstack information not provided when error occured.<br /><em>DevTools may provide more insight.</em>';
         }
 
         var stack = data.stack.split('\n');
@@ -303,7 +303,6 @@ document.addEventListener('DOMContentLoaded', function () {
         // populate the global tab access
         thisTab = tab;
 
-        // TODO: we are trying to do work on tabs that are not existent any more
         if( tab ){
 
             hostKey = background.utils.getHostKey(tab.url);

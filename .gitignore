@@ -8,3 +8,4 @@ packages/
 
 #local node stuff
 node_modules/
+*.log

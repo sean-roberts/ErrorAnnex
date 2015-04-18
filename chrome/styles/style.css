@@ -144,6 +144,13 @@ header h1 {
     white-space: nowrap;
 }
 
+.errors_container .call_stack_content em {
+    font-size: 10px;
+    color: #C5C2C2;
+    font-style: normal;
+    letter-spacing: 0.4px;
+}
+
 .errors_container .call_stack_content.show_stack .stack_item {
     display: block;
 }
