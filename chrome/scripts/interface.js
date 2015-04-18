@@ -210,6 +210,23 @@ var thisTab = null,
         return longest.length || 0;
     },
 
+    // very large urls, especially when you talk jsonp style
+    // or CORS style iframe src's need to capture the beginning and end
+    ellipseUrl = function(url){
+
+        var threshold = 70,
+            initialRange = 45,
+            start, end;
+
+        if((url || '').length > threshold){
+            start = url.slice(0, initialRange);
+            end = url.slice( initialRange - threshold );
+            url = start + '...' + end;
+        }
+
+        return url;
+    },
+
 
     
     populateInterface = function(host, errors){
@@ -249,7 +266,7 @@ var thisTab = null,
                 errorName: errorData.data.name || '',
                 occurance: errorData.occurance <= 1 ? '' : errorData.occurance > 99 ? '99+' : errorData.occurance + 'x',
                 occuranceTitle: errorData.occurance <= 1 ? '' : 'thrown ' + errorData.occurance + ' times',
-                iframeUrl: (errorData.data.fromIframe && errorData.data.iframeUrl) ? ' (iframe url: ' + errorData.data.iframeUrl + ')' : '',
+                iframeUrl: (errorData.data.fromIframe && errorData.data.iframeUrl) ? ' (iframe&nbsp;url:&nbsp;' + ellipseUrl(errorData.data.iframeUrl) + ')' : '',
                 itemClasses: getItemClasses(errorData.data)
             });
         });
