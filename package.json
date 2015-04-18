@@ -1,6 +1,6 @@
 {
   "name": "ErrorAnnex",
-  "version": "1.0.3",
+  "version": "1.0.2",
   "description": "ErrorAnnex Extension",
   "main": "gulpFile.js",
   "directories": {
