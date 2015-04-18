@@ -4,6 +4,7 @@
 # chrome builds
 *.crx
 *.zip
+packages/
 
 #local node stuff
 node_modules/

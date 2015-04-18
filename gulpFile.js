@@ -49,7 +49,7 @@ gulp.task('manifest', ['move'], function(){
 gulp.task('zip', ['move', 'js', 'manifest'], function(){
     return gulp.src('./temp/**/*')
         .pipe(plugins.zip('ErrorAnnex.' + package.version + '.zip'))
-        .pipe(gulp.dest('./'));
+        .pipe(gulp.dest('./packages/'));
 
     // del(['./temp']);
 });
