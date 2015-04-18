@@ -261,7 +261,7 @@ chrome.runtime.onStartup.addListener(function() {
 chrome.runtime.onMessage.addListener( function(message, sender, sendResponse) {
 
     // only process when we have a url
-    if(!sender.tab.url){
+    if(!sender.tab || !sender.tab.url){
         return;
     }
 

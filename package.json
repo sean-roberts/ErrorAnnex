@@ -1,0 +1,35 @@
+{
+  "name": "ErrorAnnex",
+  "version": "1.0.1.1",
+  "description": "ErrorAnnex Extension",
+  "main": "gulpFile.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sean-roberts/ErrorAnnex.git"
+  },
+  "author": "Sean Roberts",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sean-roberts/ErrorAnnex/issues"
+  },
+  "homepage": "https://github.com/sean-roberts/ErrorAnnex",
+  "dependencies": {
+    "del": "^1.1.1",
+    "gulp": "^3.8.11",
+    "gulp-header": "^1.2.2",
+    "gulp-json-editor": "^2.2.1",
+    "gulp-load-plugins": "^0.10.0",
+    "gulp-run-sequence": "^0.3.2",
+    "gulp-uglify": "^1.2.0",
+    "gulp-zip": "^3.0.2"
+  },
+  "devDependencies": {
+    "gulp-run-sequence": "^0.3.2"
+  }
+}

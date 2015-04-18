@@ -3,3 +3,7 @@
 
 # chrome builds
 *.crx
+*.zip
+
+#local node stuff
+node_modules/

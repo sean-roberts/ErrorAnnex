@@ -2,7 +2,7 @@
 	"manifest_version": 2,
 	"name": "ErrorAnnex",
 	"description": "ErrorAnnex by AnnexTools is the easiest way to listen for errors on your products and sites around the web.",
-	"version": "1.0.0",
+	"version": "0.0.0",
 	"permissions":[
 		"tabs",
 		"<all_urls>",
