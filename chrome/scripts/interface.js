@@ -79,7 +79,6 @@ var thisTab = null,
             hashIndex = tabUrl.indexOf('#');
             tabUrl = hashIndex > -1 ? tabUrl.substr(0, hashIndex) : tabUrl;
 
-            
             if(tabUrl === data.url){
                 // see if this error came from a content script caused this error
                 origin = 'in an embedded script';
@@ -94,7 +93,7 @@ var thisTab = null,
                 // With local files, all files are treated as different domains
                 
 
-                if(data.fromIframe && noOriginUrl && background.utils.getHostKey(data.iframeUrl) !== tabUrl){
+                if(data.fromIframe && noOriginUrl && background.utils.getHostKey(data.iframeUrl) !== background.utils.getHostKey(tabUrl)){
                     // Note: this can also happen if the iframe url is of a differnt
                     // domain than the host as well
                     origin = 'in a cross origin iframe';
