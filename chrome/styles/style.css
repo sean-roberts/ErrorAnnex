@@ -4,13 +4,11 @@
 
 body {
     min-width: 400px;
-    overflow: hidden;
+    overflow: auto;
     margin: 0;
     font-family: helvetica;
     line-height: 1.5;
     color: #333;
-
-    transition: height ease 0.2s;
 }
 
 
