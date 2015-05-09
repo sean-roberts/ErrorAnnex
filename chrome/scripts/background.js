@@ -202,17 +202,20 @@ var utils = {
         if(message !== undefined && chrome.runtime.lastError !== undefined){
             console.error('CAUGHT RUNTIME ERROR',
                 message, chrome.runtime.lastError,
-                '\nnote: this is logged for reference');            
+                '\nnote: this is logged for reference');     
         }
     },
 
-    sendNotifications = function(tabId){
+    sendNotifications = function(hostKey, tabId){
         
         queryTabById(tabId, function(tab){
+
             chrome.browserAction.setIcon( { path: {
                 19: "icons/icon19.png",
                 38: "icons/icon38.png"
             }, tabId: tab.id }, runtimeErrorHandler );
+
+            notifications.show(hostKey, tabId, "Errors on " + hostKey, "New JavaScript Errors have occured.");
         });
     },
 
@@ -233,8 +236,115 @@ var utils = {
                 19: "icons/icon19_p.png",
                 38: "icons/icon38_p.png"
             }, tabId: tab.id }, runtimeErrorHandler);
+
+
+            notifications.close(utils.getHostKey(tab.url), tab.id);
         });
-    };
+    },
+ 
+    notifications = (function(){
+
+        var CLIENT_NOTES_KEY = '__ErrorAnnex_Notifications__',
+
+            // the time between showing the notification and it being
+            // closed because of no action. This time tells us how long
+            // we give a "visible" state note before we will show another
+            FADE_OUT_THRESHOLD = 6000,
+
+            _clientNotes = JSON.parse(localStorage.getItem(CLIENT_NOTES_KEY) || '{}'),
+        
+            _update = function(){
+                localStorage.setItem(CLIENT_NOTES_KEY, JSON.stringify(_clientNotes));
+            },
+        
+            _markAsClosed = function(id){
+
+                // since we use a storage id that is different
+                // from the notification id, we need to resolve the
+                // correct storage id based on that note id
+                var storageId = id.split('*').shift();
+
+                delete _clientNotes[storageId];
+
+                _update();
+            },
+
+            // see if enought time has passed that we thing the
+            // notification would have timed out by the system
+            _timeElapseCheck = function(shownTime, currentTime){
+                return currentTime - shownTime < FADE_OUT_THRESHOLD;
+            },
+           
+            _globalId = 0;
+
+
+        // clean up note states
+        chrome.notifications.onClosed.addListener(_markAsClosed);
+        chrome.notifications.onClicked.addListener(_markAsClosed);
+
+        return {
+            show: function(hostKey, tabId, title, message){
+
+                var storageId = hostKey + '-' + tabId,
+
+                    // using star as an easy split point to get storageId
+                    noteKey = storageId + '*' + _globalId++,
+                    noteState = _clientNotes[storageId] || {},
+                    now = Date.now();
+
+                // is the current note state visible?
+                if(noteState.visible && _timeElapseCheck(noteState.notedTime, now)){
+                    return;
+                }
+                
+                // we are good to go on creating a notification
+                noteState.visible = true;
+                noteState.notedTime = now;
+                _clientNotes[storageId] = noteState;
+                _update();
+
+                chrome.notifications.create(
+
+                    // we need a unique key for this
+                    // particular host/tab combo
+                    noteKey,
+                    {
+                        type: 'basic',
+                        iconUrl: 'icons/icon38.png',
+                        title: title,
+                        message: message
+                    },
+                    function createdCb(){ });
+            },
+
+            purgeNotes: function(){
+                _clientNotes = {};
+                localStorage.removeItem(CLIENT_NOTES_KEY);
+            },
+
+            close: function(hostKey, tabId){
+                
+                var storageId = hostKey + '-' + tabId;
+
+                // TODO: only perform this if we support 
+                // notifications for this hostKey
+
+                // find the notification based on the 
+                // storageId and clear it
+                chrome.notifications.getAll(function(notes){
+                    var key, id;
+
+                    for(key in notes){
+                        id = key.split('*').shift();
+                        if(id === storageId){
+                            chrome.notifications.clear(key);
+                        }
+                    }
+                });
+            }
+        };
+
+    })();
 
 
 
@@ -250,6 +360,7 @@ Chrome Listeners
 chrome.runtime.onInstalled.addListener(function(details){
     if( details.reason === 'update'){
         errorStorage.purgeErrors();
+        notifications.purgeNotes();
     }
 });
 
@@ -271,7 +382,7 @@ chrome.runtime.onMessage.addListener( function(message, sender, sendResponse) {
 
     if(data.error){
         addErrorForHost(hostKey, sender.tab.id, 'JS_ERROR', data);
-        sendNotifications(sender.tab.id);
+        sendNotifications(hostKey, sender.tab.id);
     }else if(data.tabUpdate && data.tabUpdate === 'full-page-load'){
         errorStorage.remove(hostKey, sender.tab.id);
         suppressNotifications(sender.tab.id);
@@ -286,6 +397,9 @@ chrome.webNavigation.onTabReplaced.addListener(function (details){
         errorStorage.updateTabId(utils.getHostKey(tab.url), details.replacedTabId, details.tabId);
     });
 });
+
+
+
 
 
 // TODO: explore if this makes more sense than content script message
