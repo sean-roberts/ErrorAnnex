@@ -226,6 +226,35 @@ var thisTab = null,
         return url;
     },
 
+    openOptions = function(){
+        var container = find.one('.options_container'),
+            iframe = container.querySelector('iframe'),
+            optionsLocation = chrome.runtime.getURL('options.html');
+
+        if(!iframe){
+            iframe = document.createElement('iframe');
+            iframe.src = optionsLocation;
+            iframe.width = '100%';
+            container.appendChild(iframe);
+        }else if(container.classList.contains('js_open')) {
+            closeOptions();
+            return;
+        }
+
+        // if this fails for some reason, fallback
+        if(!iframe && chrome.runtime.openOptionsPage){
+            chrome.runtime.openOptionsPage();
+            return;
+        }
+
+        document.body.classList.add('body_options_open');
+        container.classList.add('js_open');
+    },
+
+    closeOptions = function(){
+        document.body.classList.remove('body_options_open');
+        find.one('.options_container').classList.remove('js_open');
+    },
 
     
     populateInterface = function(host, errors){
@@ -282,8 +311,7 @@ var thisTab = null,
             return Gator(find.one(el));
         };
 
-
-        // toggle call stack visibility
+        // Call stack visibility toggle
         _bind('.errors_list').on('click', '.toggle_stack .stack_error', function(){
             var callStackContent = this.parentElement;
 
@@ -293,7 +321,16 @@ var thisTab = null,
                 this.parentElement.classList.add('show_stack');
             }
         });
-
+        
+        // Options toggling
+        _bind('html').on('click', '.body_options_open', function(){
+            closeOptions();
+        });
+        _bind('#options_cog').on('click', function(event){
+            openOptions();
+            return false;
+        });
+        _bind('.options_container').on('click', function(){ return false; });
     };
 
 

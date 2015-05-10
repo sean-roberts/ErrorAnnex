@@ -8,7 +8,8 @@
 		"tabs",
 		"<all_urls>",
         "webNavigation",
-        "notifications"
+        "notifications",
+        "storage"
 	],
 	"background":{
 		"scripts":[
@@ -52,5 +53,10 @@
 
     "content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
     
-    "offline_enabled" : true
+    "offline_enabled" : true,
+
+    "options_ui": {
+        "page": "options.html",
+        "chrome_style": true
+    }
 }

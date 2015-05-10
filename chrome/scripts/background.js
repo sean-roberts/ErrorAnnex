@@ -7,7 +7,7 @@ var utils = {
         // best of our ability and we use it to create a key
         getHostKey : function( url ){
 
-            var segments = url.split(':'),
+            var segments = (url.split('?').shift()).split(':'),
                 scheme = segments.shift(),
                 paths = segments.shift().split('/'),
                 host = '';

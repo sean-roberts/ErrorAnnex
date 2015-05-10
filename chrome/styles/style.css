@@ -11,6 +11,10 @@ body {
     color: #333;
 }
 
+body.body_options_open {
+    min-height: 210px;
+}
+
 
 .show {
     display: block;
@@ -41,6 +45,13 @@ body {
 .max_width_bound {
     display: block !important;
     max-width: 800px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ellipsis {
+    /* needs max width on el as well*/
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -195,4 +206,70 @@ header h1 {
 
     transform: rotate(90deg);
 }
+
+
+/**
+    OPTIONS COG
+**/
+#options_cog {
+    float:right;
+    outline: 0;
+    padding-top: 6px;
+    margin-right: -5px;
+}
+
+#options_cog path {
+    fill: #88271A;
+}
+#options_cog:hover path {
+    fill: #66190F;
+}
+
+/**
+    OPTIONS FRAME HOLDER
+**/
+.options_container {
+    display: none;
+    position: absolute;
+    top: 30px;
+    background: #FFF;
+    width: 90%;
+    right: 5%;
+    box-shadow: 0 5px 30px #999;
+}
+.options_container.js_open {
+    display: block;
+}
+
+.options_container iframe {
+    border: none;
+}
+
+/**
+    OPTIONS CONTENT
+**/
+.options_content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.options_list {
+    list-style-type: none;
+    padding-left: 0px;
+}
+.option {
+    padding-top: 5px;
+}
+.sub_option {
+    padding-left: 12px;
+}
+
+#popup_for_domain {
+    max-width: 90%; /* allows for better elipse spacing*/
+}
+
+
+
+
+
 
