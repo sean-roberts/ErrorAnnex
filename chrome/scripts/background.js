@@ -206,6 +206,8 @@ var utils = {
         }
     },
 
+    // show the user indication that there has been
+    // a new error caught
     sendNotifications = function(hostKey, tabId){
         
         queryTabById(tabId, function(tab){
@@ -219,6 +221,8 @@ var utils = {
         });
     },
 
+    // upon navigation, make sure we clear up any 
+    // currently visible error state - new or read
     suppressNotifications = function(tabId, sender){
 
         queryTabById(tabId, function(tab){
@@ -226,9 +230,13 @@ var utils = {
                 19: "icons/icon19_d.png",
                 38: "icons/icon38_d.png"
             }, tabId: tab.id }, runtimeErrorHandler);
+
+            notifications.close(utils.getHostKey(tab.url), tab.id);
         });
     },
 
+    // when the user opens the browser action
+    // mark this as a "seen" error state
     markAsSeen = function(tabId){
 
         queryTabById(tabId, function(tab){
@@ -237,10 +245,48 @@ var utils = {
                 38: "icons/icon38_p.png"
             }, tabId: tab.id }, runtimeErrorHandler);
 
-
             notifications.close(utils.getHostKey(tab.url), tab.id);
         });
     },
+
+
+    options = (function(){
+
+        var _opts = {
+            allDomainNotes: false,
+            domainNotes: []
+        };
+
+        chrome.storage.sync.get(_opts, function(syncedOptions) {
+            _opts = syncedOptions;
+        });
+
+        chrome.storage.onChanged.addListener(function(changes, storageType) {
+
+            var defined = function(val){
+                    return val !== undefined;
+                };
+
+            if(storageType !== 'sync'){
+                return;
+            }
+
+            if(defined(changes.allDomainNotes)){
+                _opts.allDomainNotes = changes.allDomainNotes.newValue;
+            }
+
+            if(defined(changes.domainNotes)){
+                _opts.domainNotes = changes.domainNotes.newValue;
+            }
+        });
+
+        return {
+            get: function(){
+                return _opts;
+            }
+        };
+    })(),
+
  
     notifications = (function(){
 
@@ -283,7 +329,19 @@ var utils = {
         chrome.notifications.onClicked.addListener(_markAsClosed);
 
         return {
+
+            canShow: function(hostKey){
+
+                utils.log(options.get(), options.get().allDomainNotes, options.get().domainNotes, (options.get().domainNotes || []).indexOf(hostKey) > -1);
+
+                return options.get().allDomainNotes || (options.get().domainNotes || []).indexOf(hostKey) > -1;
+            },
+
             show: function(hostKey, tabId, title, message){
+
+                if(!this.canShow(hostKey)){
+                    return;
+                }
 
                 var storageId = hostKey + '-' + tabId,
 
@@ -401,7 +459,6 @@ chrome.webNavigation.onTabReplaced.addListener(function (details){
 
 
 
-
 // TODO: explore if this makes more sense than content script message
 // chrome.webNavigation.onCompleted.addListener(function (details){});
 
@@ -424,7 +481,7 @@ chrome.webRequest.onErrorOccurred.addListener(function(error){
     }
 
     // We need to get the correct url for the tab
-    // to correctly link the hostkey
+    // to correctly link the hostKey
     queryTabById(error.tabId, function(tab){
         var hostKey = utils.getHostKey(tab.url);
 

@@ -2,7 +2,12 @@ var currentTab,
     
     currentHostKey,
     
-    optionsState = {},
+    // global options info, these are the defaults
+    // on initial load -- then we sync
+    optionsState = {
+        allDomainNotes: false,
+        domainNotes: []
+    },
     
     getBackground = (function(){
         var bg = null;
@@ -23,19 +28,13 @@ var currentTab,
     },
 
     getOptionState = function(){
-        chrome.storage.sync.get({
-            allDomainNotes: false,
-            domainNotes: []
-        }, function(opts) {
+        chrome.storage.sync.get(optionsState, function(opts) {
             
             // keep global access of this
             optionsState = opts;
 
-            
             find.one('#popup_all').checked = opts.allDomainNotes;
             find.one('#popup_domain').checked = opts.domainNotes.indexOf(currentHostKey) > -1;
-
-            getBackground().utils.log('checked', find.one('#popup_domain').checked, currentHostKey, (opts.domainNotes.indexOf(currentHostKey) > -1));
         });
     },
 
@@ -67,14 +66,8 @@ var currentTab,
             return Gator(document.querySelector(el));
         };
 
-        _bind('#popup_all').on('change', function(){
-            getBackground().utils.log('changed', this.checked);
-            setOptionState();
-        });
-
-        _bind('#popup_domain').on('change', function(){
-            setOptionState();
-        });
+        _bind('#popup_all').on('change', setOptionState);
+        _bind('#popup_domain').on('change', setOptionState);
     },
 
     applyHostNoteOptions = function(hostKey){
