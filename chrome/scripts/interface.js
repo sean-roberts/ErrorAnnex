@@ -190,7 +190,13 @@ var thisTab = null,
         // until we run into an issue with sizing being
         // too far off, we will settle with this to reduce
         // the the need to calculate it
-        find.one('body').style.width = longestLineLength * 7 + 'px';
+        var w = longestLineLength * 7;
+
+        // if we allow it to grow too far it will
+        // not be visible on the screen
+        if(w < 830){
+            find.one('body').style.width = w + 'px';
+        }
     },
 
     calcMinWidth = function(data){

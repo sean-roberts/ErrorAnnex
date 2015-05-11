@@ -202,7 +202,7 @@ var utils = {
         if(message !== undefined && chrome.runtime.lastError !== undefined){
             console.error('CAUGHT RUNTIME ERROR',
                 message, chrome.runtime.lastError,
-                '\nnote: this is logged for reference');     
+                '\nnote: this is logged for reference');   
         }
     },
 

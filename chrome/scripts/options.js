@@ -56,7 +56,6 @@ var currentTab,
                 optionsState.domainNotes.splice(domainIndex, 1);
             }
         }
-        
 
         chrome.storage.sync.set(optionsState);
     },
