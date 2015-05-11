@@ -202,7 +202,7 @@ var utils = {
         if(message !== undefined && chrome.runtime.lastError !== undefined){
             console.error('CAUGHT RUNTIME ERROR',
                 message, chrome.runtime.lastError,
-                '\nnote: this is logged for reference');   
+                '\nnote: this is logged for reference');
         }
     },
 
@@ -328,12 +328,19 @@ var utils = {
         chrome.notifications.onClosed.addListener(_markAsClosed);
         chrome.notifications.onClicked.addListener(_markAsClosed);
 
+        chrome.notifications.onButtonClicked.addListener(function(noteId){
+
+            // extrapolate the tab id from the note
+            // todo: just add a regex here
+            var tabId = parseInt(noteId.split('*').shift().split('-').pop(), 10);
+
+            // switch the tab
+            chrome.tabs.update(tabId, {highlighted: true});
+        });
+
         return {
 
             canShow: function(hostKey){
-
-                utils.log(options.get(), options.get().allDomainNotes, options.get().domainNotes, (options.get().domainNotes || []).indexOf(hostKey) > -1);
-
                 return options.get().allDomainNotes || (options.get().domainNotes || []).indexOf(hostKey) > -1;
             },
 
@@ -369,8 +376,12 @@ var utils = {
                     {
                         type: 'basic',
                         iconUrl: 'icons/icon38.png',
+                        priority: 0,
                         title: title,
-                        message: message
+                        message: message,
+                        buttons:[{
+                            title: 'Navigate To Tab'
+                        }]
                     },
                     function createdCb(){ });
             },

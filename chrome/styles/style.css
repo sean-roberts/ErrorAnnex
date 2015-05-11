@@ -24,6 +24,10 @@ body.body_options_open {
     display: none;
 }
 
+.disabled, [disabled]{
+    opacity: .5;
+}
+
 .clearfix:after {
     visibility: hidden;
     display: block;
@@ -261,7 +265,7 @@ header h1 {
     padding-top: 5px;
 }
 .sub_option {
-    padding-left: 12px;
+    padding-left: 15px;
 }
 
 #popup_for_domain {

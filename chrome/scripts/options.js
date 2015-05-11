@@ -29,12 +29,21 @@ var currentTab,
 
     getOptionState = function(){
         chrome.storage.sync.get(optionsState, function(opts) {
-            
+
             // keep global access of this
             optionsState = opts;
 
+            var domainSpecific = find.one('#popup_domain');
+
+            domainSpecific.checked = opts.domainNotes.indexOf(currentHostKey) > -1;
+            
+            if(opts.allDomainNotes){
+                domainSpecific.disabled = true;
+                find.one('#popup_for_domain').classList.add('disabled');
+            }
+            
+
             find.one('#popup_all').checked = opts.allDomainNotes;
-            find.one('#popup_domain').checked = opts.domainNotes.indexOf(currentHostKey) > -1;
         });
     },
 
@@ -65,7 +74,18 @@ var currentTab,
             return Gator(document.querySelector(el));
         };
 
-        _bind('#popup_all').on('change', setOptionState);
+        _bind('#popup_all').on('change', function(){
+
+            find.one('#popup_domain').disabled = !!this.checked;
+
+            if(this.checked){
+                find.one('#popup_for_domain').classList.add('disabled');
+            }else {
+                find.one('#popup_for_domain').classList.remove('disabled');
+            }
+
+            setOptionState();
+        });
         _bind('#popup_domain').on('change', setOptionState);
     },
 

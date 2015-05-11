@@ -194,9 +194,8 @@ var thisTab = null,
 
         // if we allow it to grow too far it will
         // not be visible on the screen
-        if(w < 830){
-            find.one('body').style.width = w + 'px';
-        }
+        find.one('body').style.width = w < 830 ? w : 800 + 'px';
+        
     },
 
     calcMinWidth = function(data){
