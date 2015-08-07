@@ -31,6 +31,7 @@ Code injected to listen for errors on the web page's context
 
 })(function errorListener(eventId){
 
+    // listen for actual error messages
     window.addEventListener('error', function(e){
         var isIframe = self !== top,
             error = {
@@ -48,7 +49,7 @@ Code injected to listen for errors on the web page's context
         window.dispatchEvent(new CustomEvent(eventId, { detail: error }));
 
         return false;
-    });
+    }, true);
 
 });
 
