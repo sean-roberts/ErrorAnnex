@@ -234,7 +234,7 @@ var thisTab = null,
             }) || '';
 
         return longest.length || 0;
-    },    
+    },
 
     openOptions = function(){
         var container = find.one('.options_container'),
