@@ -29,6 +29,26 @@ var thisTab = null,
             var div = document.createElement('div');
             div.appendChild(document.createTextNode(str));
             return div.innerHTML;
+        },
+
+
+        // Ellipse the middle of long strings to show the beginning
+        // and end to capture what's most relevant.
+        // Very large urls, especially when you talk jsonp style
+        // or CORS style iframe src's need to capture the beginning and end.
+        ellipseString : function(str){
+
+            var threshold = 70,
+                initialRange = 45,
+                start, end;
+
+            if((str || '').length > threshold){
+                start = str.slice(0, initialRange);
+                end = str.slice( initialRange - threshold );
+                str = start + '...' + end;
+            }
+
+            return str;
         }
     },
 
@@ -108,8 +128,10 @@ var thisTab = null,
                 origin = 'in ' + pathSegments[pathSegments.length - 1];
             }
 
+            
+
             if(data.fromIframe && data.iframeName){
-                origin += ' named "' + data.iframeName + '"';
+                origin += ' named "' + utils.ellipseString(utils.escapeHTML(data.iframeName)) + '"';
             }
 
             if(!noOriginUrl){
@@ -123,7 +145,7 @@ var thisTab = null,
             }
         }
         
-        return origin;
+        return utils.escapeHTML(origin);
     },
 
     // for a given item, the data may justify 
@@ -179,7 +201,7 @@ var thisTab = null,
         // add link to the 2nd reason entry in the 
         // call stack. But only do it if we have a good match on it
         if(data.url && stack.length > 1 && stack[1].indexOf(data.url) >= 0){
-            stack[1] = stack[1].replace(data.url, '<a href="view-source:' + data.url.replace(/[\/\\]/, '') + '" target="_blank">' + data.url + '</a>');
+            stack[1] = stack[1].replace(data.url, '<a href="view-source:' + data.url.replace(/[\/\\]/, '') + '" target="_blank">' + utils.escapeHTML(data.url) + '</a>');
         }
 
         return stack.join('');
@@ -212,24 +234,7 @@ var thisTab = null,
             }) || '';
 
         return longest.length || 0;
-    },
-
-    // very large urls, especially when you talk jsonp style
-    // or CORS style iframe src's need to capture the beginning and end
-    ellipseUrl = function(url){
-
-        var threshold = 70,
-            initialRange = 45,
-            start, end;
-
-        if((url || '').length > threshold){
-            start = url.slice(0, initialRange);
-            end = url.slice( initialRange - threshold );
-            url = start + '...' + end;
-        }
-
-        return url;
-    },
+    },    
 
     openOptions = function(){
         var container = find.one('.options_container'),
@@ -299,7 +304,7 @@ var thisTab = null,
                 errorName: errorData.data.name || '',
                 occurance: errorData.occurance <= 1 ? '' : errorData.occurance > 99 ? '99+' : errorData.occurance + 'x',
                 occuranceTitle: errorData.occurance <= 1 ? '' : 'thrown ' + errorData.occurance + ' times',
-                iframeUrl: (errorData.data.fromIframe && errorData.data.iframeUrl) ? ' (iframe&nbsp;url:&nbsp;' + ellipseUrl(errorData.data.iframeUrl) + ')' : '',
+                iframeUrl: (errorData.data.fromIframe && errorData.data.iframeUrl) ? ' (iframe&nbsp;url:&nbsp;' + utils.ellipseString(errorData.data.iframeUrl) + ')' : '',
                 itemClasses: getItemClasses(errorData.data)
             });
         });
