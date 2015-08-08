@@ -103,7 +103,7 @@ header h1 {
 .errors_container ul li {
     width: 100%;
     border-bottom: 1px solid #efefef;
-    padding: 2px 25px 2px 30px;
+    padding: 2px 25px 2px 10px;
     margin-top: 5px;
     cursor: default;
 }
@@ -117,10 +117,14 @@ header h1 {
     padding-right:0;*/
 }
 
+.errors_container .item_content {
+    margin-left: 30px;
+}
 
 .errors_container ul li div {
     display: inline-block;
 }
+
 
 .errors_container .occurance {
     display: block;
@@ -271,6 +275,47 @@ header h1 {
 #popup_for_domain {
     max-width: 90%; /* allows for better elipse spacing*/
 }
+
+
+/**
+    ACTIONS ON ERROR ITEMS
+**/
+.errors_container .item_actions {
+    float: left;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity ease-in 0.13s, left ease-in 0.13s;
+    cursor: pointer;
+    padding-top: 6px;
+    position: relative;
+    left: -8px;
+}
+
+.errors_container .item_actions:hover {
+
+}
+
+.errors_container ul li:hover .item_actions {
+    visibility: visible;
+    opacity: 1;
+    left: 0;
+}
+
+.errors_container .item_actions svg {
+    width: 15px;
+    height: 15px;
+}
+
+.errors_container .item_actions svg * {
+   fill: #e5e5e5; 
+}
+
+.errors_container .item_actions:hover svg * {
+    fill: #555;
+}
+
+
+
 
 
 
