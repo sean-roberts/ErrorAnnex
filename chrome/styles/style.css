@@ -285,8 +285,12 @@ header h1 {
     visibility: hidden;
     opacity: 0;
     transition: opacity ease-in 0.13s, left ease-in 0.13s;
+    /*delay requires the user to show intent to see actions 
+    by hovering for atleast this time*/
+    transition-delay: 0.2s; 
     cursor: pointer;
     padding-top: 6px;
+    padding-left: 10px;
     position: relative;
     left: -8px;
 }
@@ -307,7 +311,7 @@ header h1 {
 }
 
 .errors_container .item_actions svg * {
-   fill: #e5e5e5; 
+   fill: #d5d5d5; 
 }
 
 .errors_container .item_actions:hover svg * {

@@ -212,11 +212,11 @@ var thisTab = null,
         // until we run into an issue with sizing being
         // too far off, we will settle with this to reduce
         // the the need to calculate it
-        var w = longestLineLength * 7;
+        var w = longestLineLength * 8;
 
         // if we allow it to grow too far it will
         // not be visible on the screen
-        find.one('body').style.width = (w < 830 ? w : 800) + 'px';
+        find.one('body').style.width = (w < 830 ? w : 820) + 'px';
         
     },
 
